@@ -65,9 +65,9 @@ void main() {
 			if (a == NULL)	return -1;
 
 			*a = '\0';
-			while (prebacivac[0] != ' ' && prebacivac[0] != '\n') {
+			while (prebacivac[0] != ' ' && prebacivac[0] != '\n')
 				strncat(a, prebacivac++, ++addressDistance / addressDistance);
-			}
+
 			nizStu[i].brBodova = atoi(a);
 			free(a);
 			if (++i == brStu)	break;
