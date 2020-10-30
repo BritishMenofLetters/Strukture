@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 typedef struct student stu;
 
 struct student{
@@ -45,36 +44,40 @@ void main() {
 	char* prebacivac = (char*)malloc(sizeof(char));
 	if (prebacivac == NULL) return -1;
 
-	prebacivac = &buffer[0];
+	prebacivac = buffer;
 	i = 0;
+	int addressDistance = 0;
 	while (i < brStu){
 		strcpy(nizStu[i].ime,"\0");
 		strcpy(nizStu[i].prezime,"\0");
 
 			while (prebacivac[0] != ' ' && prebacivac[0] != '\n')
-				strncat( nizStu[i].ime,prebacivac++,1);
+				strncat( nizStu[i].ime,prebacivac++, ++addressDistance/addressDistance);
 			prebacivac++;
+			addressDistance++;
 
 			while (prebacivac[0] != ' ' && prebacivac[0] != '\n')
-				strncat( nizStu[i].prezime,prebacivac++,1);
+				strncat( nizStu[i].prezime,prebacivac++, ++addressDistance / addressDistance);
 			prebacivac++;
+			addressDistance++;
 
 			char* a = (char*)malloc(4 * sizeof(char));
 			if (a == NULL)	return -1;
 
 			*a = '\0';
 			while (prebacivac[0] != ' ' && prebacivac[0] != '\n') {
-				strncat(a, prebacivac++,1);
+				strncat(a, prebacivac++, ++addressDistance / addressDistance);
 			}
 			nizStu[i].brBodova = atoi(a);
 			free(a);
 			if (++i == brStu)	break;
 			prebacivac++;
+			addressDistance++;
 			
 	}
 	
-	//free(prebacivac);
-	free(buffer);
+	free(prebacivac-addressDistance);	//oslobadanje i prebacivaca i buffera
+
 
 	int maxBod = 120;
 	printf("Ime\tPrezime\tAp.Bod\tRe.Bod\n");

@@ -110,7 +110,7 @@ int addAtEnd(position head) {
 //e) briše odreðeni element iz liste
 int deleteElement(position head, char elem[]) {
 	position curr = NULL, prev = NULL;
-	prev = FindPrev;
+	prev = FindPrev(head,elem);
 
 	if (prev == NULL) {
 		printf("Takav element ne postoji!");
@@ -122,9 +122,6 @@ int deleteElement(position head, char elem[]) {
 	free(curr);
 
 	return 0;
-
-
-	
 }
 
 
