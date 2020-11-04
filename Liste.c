@@ -14,19 +14,21 @@ struct osoba{
 	position next;
 };
 
+//--------------------Drugi zadatak--------------------//
+
 //Upisuje elemente strukture
 void EnterElements(position q) {
 	
 	rewind(stdin);
-	printf("Unesite ime: ");
-	fgets(q->ime, 10, stdin);
+	fputs("Unesite ime: ", stdout);
+	fgets(q->ime, 30, stdin);
 
 	rewind(stdin);
-	printf("Unesite prezime: ");
-	fgets(q->prezime, 20, stdin);
+	fputs("Unesite prezime: ", stdout);
+	fgets(q->prezime, 30, stdin);
 
 	rewind(stdin);
-	printf("Unesite godinu rodenja: ");
+	fputs("Unesite godinu rodenja: ", stdout);
 	scanf("%d", &q->godRodenja);
 }
 
@@ -124,6 +126,171 @@ int deleteElement(position head, char elem[]) {
 	return 0;
 }
 
+//--------------------Treci zadatak--------------------//
+
+//a) dinamièki dodaje novi element iza odreðenog elementa
+int addAfter(position p, char el[]) {
+	p = FindElement(p, el);
+
+	if (p == NULL)	return -1;
+
+
+	return addAtStart(p);
+}
+
+//b) dinamièki dodaje novi element ispred odreðenog elementa
+int addBefore(position p, char el[]) {
+	p = FindPrev(p, el);
+
+	if (p == NULL)	return -1;
+
+	return addAtStart(p);
+}
+
+//c) sortira listu po prezimenima osoba ..prvi nacin
+void Bsort(position pocetak) {
+	position p = NULL, kraj = NULL;
+	while (pocetak->next != kraj) {
+		p = pocetak->next;
+
+		while (p->next != kraj) {
+
+			if (strcmp(p->prezime, p->next->prezime) > 0) {
+				strcat(p->prezime, p->next->prezime);
+				strncpy(p->next->prezime, p->prezime, strlen(p->prezime) - strlen(p->next->prezime));
+				strncpy(p->prezime, &p->next->prezime[strlen(p->prezime) - strlen(p->next->prezime)], strlen(p->prezime) - strlen(p->next->prezime));
+			}
+			p = p->next;
+		}
+
+		kraj = kraj->next;
+	}
+}
+
+//c) sortira listu po prezimenima osoba ...Drugi nacin
+void Isort(position pocetak) {
+	position p = NULL, min = NULL;
+
+	while (pocetak->next != NULL) {
+		p = pocetak->next;
+		min = pocetak;
+
+		while (p != NULL) {
+
+			if (strcmp(p->prezime, min->prezime) < 0)
+				min = p;
+			p = p->next;
+		}
+
+		if (pocetak != min) {
+			strcat(min->prezime, pocetak->prezime);
+			strncpy(pocetak->prezime, min->prezime, strlen(min->prezime) - strlen(pocetak->prezime));
+			strncpy(min->prezime, &pocetak->prezime[strlen(min->prezime) - strlen(pocetak->prezime)], strlen(min->prezime) - strlen(pocetak->prezime));
+		}
+
+		pocetak = pocetak->next;
+	}
+}
+
+// d) upisuje listu u datotekuint ListToFile(position p, char file[]) {	FILE* fp = fopen(file, "a");	if (fp == NULL) {		puts("Greska pri otvaranju datoteke");		return -1;	}	while (p != NULL) {		fprintf(file, "%s %s %d\n", p->ime, p->prezime, p->godRodenja);		p = p->next;	}	fclose(fp);	return 0;}
+
+int FileToBuffer(char file[], char buffer[]) {
+	FILE* fp = NULL;
+	int numBytes = 0;
+
+	fp = fopen(file, "r");
+	if (fp == NULL)	return -1;
+
+	fseek(fp, 0, SEEK_END);
+	numBytes = ftell(fp);
+
+	fseek(fp, 0, SEEK_SET);
+
+	buffer = (char*)calloc(numBytes, sizeof(char));
+
+	if (buffer == NULL)	return -1;
+
+	if (fread(buffer, sizeof(char), numBytes, fp) != numBytes)	return -1;
+	fclose(fp);
+
+	return 0;
+}
+
+int FindStudents(char buffer[]) {
+	int i = 0, brStu = 0;
+	while (1) {
+		if (buffer[i] == '\0')	break;
+
+		if (buffer[i++] != '\n' && buffer[i] == '\n')
+			brStu++;
+	}
+	return brStu;
+}
+
+int fEnterElementsList(position q, char buffer[], int brStu) {
+
+	char ime[30] = "\0", prezime[30] = "\0";
+
+	char* prebacivac = (char*)malloc(sizeof(char));
+	if (prebacivac == NULL) return -1;
+
+	prebacivac = buffer;
+
+	int i = 0, j = 0;
+	while (i < brStu) {
+		position r = (position)malloc(sizeof(list));
+
+		*ime = "\0";
+		while (prebacivac[0] != ' ' && prebacivac[0] != '\n')
+			strncat(ime, prebacivac++, ++j / j);
+		strcpy(r->ime, ime);
+
+
+		prebacivac++;
+		++j;
+
+		*prezime = "\0";
+		while (prebacivac[0] != ' ' && prebacivac[0] != '\n')
+			strncat(prezime, prebacivac++, ++j / j);
+		strcpy(r->prezime, prezime);
+		prebacivac++;
+		++j;
+
+		char* a = (char*)malloc(4 * sizeof(char));
+		if (a == NULL)	return -1;
+
+		*a = '\0';
+		while (prebacivac[0] != ' ' && prebacivac[0] != '\n')
+			strncat(a, prebacivac++, ++j / j);
+
+		r->godRodenja = atoi(a);
+		free(a);
+
+		r->next = q->next;
+		q->next = r;
+
+
+		if (++i == brStu)	break;
+		prebacivac++;
+		++j;
+	}
+
+	free(prebacivac - j);
+
+	return 0;
+}
+
+//e) èita listu iz datoteke
+int FileToList(char file[], position p) {
+	char* buffer = NULL;
+	int brStu = 0;
+
+	if (FileToBuffer(file, buffer)) return -1;
+
+	brStu = FindStudents(buffer);
+
+	return fEnterElementsList(p, buffer, brStu);
+}
 
 
 
@@ -131,4 +298,6 @@ void main() {
 
 	position Head = (position)malloc(sizeof(list));
 	Head->next = NULL;
+
+	FileToList("studenti.txt", Head);
 }
