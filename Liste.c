@@ -192,7 +192,7 @@ void Isort(position pocetak) {
 	}
 }
 
-//d)
+//d) upisuje listu u datoteku
 int ListToFile(position p, char file[]) {	FILE* fp = fopen(file, "a");	if (fp == NULL) {		puts("Greska pri otvaranju datoteke");		return -1;	}	while (p != NULL) {		fprintf(file, "%s %s %d\n", p->ime, p->prezime, p->godRodenja);		p = p->next;	}	fclose(fp);	return 0;}
 
 int FileToBuffer(char file[], char buffer[]) {
