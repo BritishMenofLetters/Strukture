@@ -1,88 +1,148 @@
+/*Zapis u datoteci za jednog studenta:
+	brojImenaStudenta brojPrezimenaStudenta ImeStudenta[] PrezimeStudenta[] brojBodova
+*/
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+
+
+struct student {
+	char ime[45];
+	char prezime[45];
+	int brBodova;
+};
 
 typedef struct student stu;
 
-struct student{
-	char ime[30];
-	char prezime[30];
-	int	brBodova;
-};
 
+int FileToBuffer(char* file, char** buff) {
 
-void main() {
-	
-	FILE* fp = NULL;
-	int numBytes=0, i = 0, brStu = 0;
+	FILE* fp = fopen(file, "r");	//Otvaranje datoteke za citanje
+	if (fp == NULL) {
+		puts("Greska pri otvaranju datoteke");
+		return -1;	//Ukoliko je nemoguce doci do datoteke
+	}
 
-	fp = fopen("studenti.txt", "r");
-	if (fp == NULL)	return -1;
+	fseek(fp, 0L, SEEK_END);	//Postavaljanje pokazivaca na kraj datoteke
+	int numBytes = ftell(fp);		//Ocitavanje velicine datoteke za buffer
 
-	fseek(fp, 0, SEEK_END);
-	numBytes = ftell(fp);
+	char* buffer = (char*)malloc(numBytes);	//Stvaranje buffera
+	if (buffer == NULL) {
+		puts("Greska pri stvaranje buffera");
+		return -1;
+	}
 
-	fseek(fp, 0, SEEK_SET);
-
-	char* buffer = (char*)calloc(numBytes, sizeof(char));
-	if (buffer == NULL)	return 1;
-
+	fseek(fp, 0L, SEEK_SET);	//Postavljanje pokazivaca na pocetak datoteke za buffer
 	fread(buffer, sizeof(char), numBytes, fp);
+	*buff = buffer;
+
 	fclose(fp);
 
-	while (1) {
-		if (buffer[i] == '\0')	break;
-		
-		if (buffer[i++] != '\n' && buffer[i] == '\n')
-			brStu++;
+	return 0;
+}
+
+int numStudents(char* buffer) {
+	int numBytes = 0, numStu = 0, i = 0;
+
+	while (buffer[i] != '\0')	//Pretrazi cijeli string
+		if (buffer[i++] == '\n' && buffer[i] != '\n')	//Provjera je li student upisan, tj. da nije prazan red
+			numStu++;
+
+	return numStu;
+}
+
+stu* DataToStruct(char* buffer, int numStu) {
+	int fName, lName, numBytes = 0;	//broj imena // broj prezimena // bitovi koje je sscanf obradia
+	char temp[30];	//privremena pohrana imena ili prezimena
+
+	stu* nizStu = (stu*)malloc(sizeof(stu) * numStu);	//dinamicki al. niz struktura studenata
+	if (nizStu == NULL) {
+		puts("Greska pri alociranju niza struktura");
+		return nizStu;
 	}
 
-	stu* nizStu = (stu*)malloc(sizeof(stu)*brStu);
-	if (nizStu == NULL) return -1;
-	
-	char* prebacivac = (char*)malloc(sizeof(char));
-	if (prebacivac == NULL) return -1;
+	int n;	//obradeni bitovi jednog sscanf
+	for (int i = 0; i < numStu; i++) {	//upisivanje studenata u strukturu
 
-	prebacivac = buffer;
-	i = 0;
-	int addressDistance = 0;
-	while (i < brStu){
-		strcpy(nizStu[i].ime,"\0");
-		strcpy(nizStu[i].prezime,"\0");
+		sscanf(buffer + numBytes, "%d %d %n", &fName, &lName, &n);	//Koliko student ima imena i prezimena
+		numBytes += n;
 
-			while (prebacivac[0] != ' ' && prebacivac[0] != '\n')
-				strncat( nizStu[i].ime,prebacivac++, ++addressDistance/addressDistance);
-			prebacivac++;
-			addressDistance++;
+		strcpy(nizStu[i].ime, "\0");	//Da se moze koristi strcat zbog vise imena
+		for (int j = 0; j < fName; j++) {	//Upisivanje imena
+			if (j > 0)
+				strcat(nizStu[i].ime, " ");	//Dodaj razmak ako je vec upisano ime
 
-			while (prebacivac[0] != ' ' && prebacivac[0] != '\n')
-				strncat( nizStu[i].prezime,prebacivac++, ++addressDistance / addressDistance);
-			prebacivac++;
-			addressDistance++;
+			sscanf(buffer + numBytes, "%s %n", temp, &n);	//citanje imena iz buffera
+			numBytes += n;
 
-			char* a = (char*)malloc(4 * sizeof(char));
-			if (a == NULL)	return -1;
+			strcat(nizStu[i].ime, temp);	//Upisi ime
+		}
 
-			*a = '\0';
-			while (prebacivac[0] != ' ' && prebacivac[0] != '\n')
-				strncat(a, prebacivac++, ++addressDistance / addressDistance);
+		strcpy(nizStu[i].prezime, "\0");	//Da se moze koristi strcat zbog vise prezimena
+		for (int j = 0; j < lName; j++) {	//Upisivanje prezimena
+			if (j > 0)
+				strcat(nizStu[i].prezime, " ");	//Dodaj razmak ako je vec upisano prezime
 
-			nizStu[i].brBodova = atoi(a);
-			free(a);
-			if (++i == brStu)	break;
-			prebacivac++;
-			addressDistance++;
-			
+			sscanf(buffer + numBytes, "%s %n", temp, &n);//citanje prezimena iz buffera
+			numBytes += n;
+
+			strcat(nizStu[i].prezime, temp);//Upisi prezime
+		}
+
+		sscanf(buffer + numBytes, "%d %n", &nizStu[i].brBodova, &n);	//Upisivanje bodova
+		numBytes += n;
 	}
-	
-	free(prebacivac-addressDistance);	//oslobadanje i prebacivaca i buffera
+
+	return nizStu;
+}
+
+void tab(char* niz) {	//postavljanje do 3 tabulatora. Ako je max 3 prezimena
+	for (int i = strlen(niz); i < 24; i += 8)
+		fputs("\t", stdout);
+}
+
+int printStudents(stu nizStu[], int numStu, int maxBod) {
+
+	if (nizStu == NULL) {
+		puts("Greska pri ispisivanju studenata");
+		return -1;
+	}
+
+	fputs("Ime\t\t\tPrezime\t\t   Broj bodova\t Postotak\n", stdout);
+
+	for (int i = 0; i < numStu; i++) {
+		fputs(nizStu[i].ime, stdout);
+		tab(nizStu[i].ime);	//ubacivanje tabulatora
+
+		fputs(nizStu[i].prezime, stdout);
+		tab(nizStu[i].prezime);	//ubacivanje tabulatora
 
 
-	int maxBod = 120;
-	printf("Ime\tPrezime\tAp.Bod\tRe.Bod\n");
-	for (i = 0; i < brStu; i++)
-		printf("%s\t%s\t%d\t%.2f\n", nizStu[i].ime, nizStu[i].prezime, nizStu[i].brBodova,nizStu[i].brBodova/(float)maxBod*100);
+		printf("%d\t   %g\n", nizStu[i].brBodova, (float)nizStu[i].brBodova / maxBod * 100);
+	}
+
+	return 0;
+}
+
+int main() {
+	char* file = "studenti.txt";
+	int numStu = 0, maxBod = 120;
+
+	char* buffer = (char*)malloc(sizeof(char));
+	if (buffer == NULL)
+		return -1;
+
+	FileToBuffer(file, &buffer);
+	numStu = numStudents(buffer);
+
+	stu* nizStu = (stu*)malloc(sizeof(stu) * numStu);
+	if (nizStu == NULL)
+		return -1;
+
+	nizStu = DataToStruct(buffer, numStu);
+	free(buffer);
+
+	printStudents(nizStu, numStu, maxBod);
 
 	free(nizStu);
 
