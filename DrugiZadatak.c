@@ -1,150 +1,164 @@
-/*Zapis u datoteci za jednog studenta:
-	brojImenaStudenta brojPrezimenaStudenta ImeStudenta[] PrezimeStudenta[] brojBodova
-*/
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
+typedef struct osoba list;
+typedef list* position;
 
-struct student {
-	char ime[45];
-	char prezime[45];
-	int brBodova;
+struct osoba {
+	char* ime;
+	char* prezime;
+	int godRodenja;
+
+	position next;
 };
 
-typedef struct student stu;
+//Unosi elemente u cvor p
+void enterElements(position p) {
+	char temp[45];
 
+	rewind(stdin);	//Ocisti od prijasnjeg unosa
+	fputs("Unesite ime: ", stdout);
+	fgets(temp, 45, stdin);	
+	
+	p->ime = (char*)malloc(strlen(temp));
+	strcpy(p->ime, temp);//Unesi ime
 
-int FileToBuffer(char* file, char** buff) {
+	rewind(stdin);	//Ocisti od prijasnjeg unosa
+	fputs("Unesite prezime: ", stdout);
+	fgets(temp, 45, stdin);
 
-	FILE* fp = fopen(file, "r");	//Otvaranje datoteke za citanje
-	if (fp == NULL) {
-		puts("Greska pri otvaranju datoteke");
-		return -1;	//Ukoliko je nemoguce doci do datoteke
-	}
+	p->prezime = (char*)malloc(strlen(temp));
+	strcpy(p->prezime, temp);//Unesi prezime
 
-	fseek(fp, 0L, SEEK_END);	//Postavaljanje pokazivaca na kraj datoteke
-	int numBytes = ftell(fp);		//Ocitavanje velicine datoteke za buffer
+	rewind(stdin);	//Ocisti od prijasnjeg unosa
+	fputs("Unesite godinu rodenja: ", stdout);
+	scanf("%d", &p->godRodenja);	//Unesi godinu rodenja
 
-	char* buffer = (char*)malloc(numBytes);	//Stvaranje buffera
-	if (buffer == NULL) {
-		puts("Greska pri stvaranje buffera");
+	p->next = NULL;
+}
+
+//a) dinamièki dodaje novi element na poèetak liste
+int add(position previous){
+	position p = (position)malloc(sizeof(list));
+	if (p == NULL) {
+		puts("Greska pri alociranju cvora");
 		return -1;
 	}
 
-	fseek(fp, 0L, SEEK_SET);	//Postavljanje pokazivaca na pocetak datoteke za buffer
-	fread(buffer, sizeof(char), numBytes, fp);
-	*buff = buffer;
+	enterElements(p);
 
-	fclose(fp);
+	p->next = previous->next;
+	previous->next = p;
 
 	return 0;
 }
 
-int numStudents(char* buffer) {
-	int numBytes = 0, numStu = 0, i = 0;
-
-	while (buffer[i] != '\0')	//Pretrazi cijeli string
-		if (buffer[i++] == '\n' && buffer[i] != '\n')	//Provjera je li student upisan, tj. da nije prazan red
-			numStu++;
-
-	return numStu;
-}
-
-stu* DataToStruct(char* buffer, int numStu) {
-	int fName, lName, numBytes = 0;	//broj imena // broj prezimena // bitovi koje je sscanf obradia
-	char temp[30];	//privremena pohrana imena ili prezimena
-
-	stu* nizStu = (stu*)malloc(sizeof(stu) * numStu);	//dinamicki al. niz struktura studenata
-	if (nizStu == NULL) {
-		puts("Greska pri alociranju niza struktura");
-		return nizStu;
-	}
-
-	int n;	//obradeni bitovi jednog sscanf
-	for (int i = 0; i < numStu; i++) {	//upisivanje studenata u strukturu
-
-		sscanf(buffer + numBytes, "%d %d %n", &fName, &lName, &n);	//Koliko student ima imena i prezimena
-		numBytes += n;
-
-		strcpy(nizStu[i].ime, "\0");	//Da se moze koristi strcat zbog vise imena
-		for (int j = 0; j < fName; j++) {	//Upisivanje imena
-			if (j > 0)
-				strcat(nizStu[i].ime, " ");	//Dodaj razmak ako je vec upisano ime
-
-			sscanf(buffer + numBytes, "%s %n", temp, &n);	//citanje imena iz buffera
-			numBytes += n;
-
-			strcat(nizStu[i].ime, temp);	//Upisi ime
-		}
-
-		strcpy(nizStu[i].prezime, "\0");	//Da se moze koristi strcat zbog vise prezimena
-		for (int j = 0; j < lName; j++) {	//Upisivanje prezimena
-			if (j > 0)
-				strcat(nizStu[i].prezime, " ");	//Dodaj razmak ako je vec upisano prezime
-
-			sscanf(buffer + numBytes, "%s %n", temp, &n);//citanje prezimena iz buffera
-			numBytes += n;
-
-			strcat(nizStu[i].prezime, temp);//Upisi prezime
-		}
-
-		sscanf(buffer + numBytes, "%d %n", &nizStu[i].brBodova, &n);	//Upisivanje bodova
-		numBytes += n;
-	}
-
-	return nizStu;
-}
-
-void tab(char* niz) {	//postavljanje do 3 tabulatora. Ako je max 3 prezimena
-	for (int i = strlen(niz); i < 24; i += 8)
-		fputs("\t", stdout);
-}
-
-int printStudents(stu nizStu[], int numStu, int maxBod) {
-
-	if (nizStu == NULL) {
-		puts("Greska pri ispisivanju studenata");
+//b)ispisuje listu
+int printList(position p) {
+	if (p == NULL) {
+		puts("Lista je prazna");
 		return -1;
 	}
 
-	fputs("Ime\t\t\tPrezime\t\t   Broj bodova\t Postotak\n", stdout);
-
-	for (int i = 0; i < numStu; i++) {
-		fputs(nizStu[i].ime, stdout);
-		tab(nizStu[i].ime);	//ubacivanje tabulatora
-
-		fputs(nizStu[i].prezime, stdout);
-		tab(nizStu[i].prezime);	//ubacivanje tabulatora
-
-
-		printf("%d\t   %g\n", nizStu[i].brBodova, (float)nizStu[i].brBodova / maxBod * 100);
+	while (p != NULL) {
+		printf("\n%s %s %d", p->ime, p->prezime, p->godRodenja);
+		p = p->next;
 	}
+	return 0;
+}
+
+//trazi zadnji cvor u listi
+position findLast(position p) {
+	while (p->next != NULL)
+		p = p->next;
+
+	return p;
+}
+
+//c) dinamièki dodaje novi element na kraj liste
+int addAtEnd(position p) {
+	position last = findLast(p);
+
+	if (last == NULL) {
+		puts("Greska! Nije pronaden zadnji element liste.");
+		return -1;
+	}
+
+	return add(last);
+}
+
+//d) pronalazi element u listi (po prezimenu)
+position findElement(position p, const char* prezime) {
+	while (p != NULL && strcmp(p->prezime, prezime))
+		p = p->next;
+	
+	if (p == NULL)
+		puts("Takav element ne postoji");
+	return p;
+}
+
+//Trazi predhodni element
+position findPrevious(position p, char* prezime) {
+	while (p->next != NULL && strcmp(p->next->prezime, prezime))	///sve dok sljedeci nije trazeno prezime ili kraj liste
+		p = p->next;
+	if (p->next == NULL) {
+		printf("Ne postoji traženo prezime %s", prezime);
+		return NULL;
+	}
+
+	return p;
+}
+
+//e) briše odreðeni element iz liste
+int deleteElement(position p, char* prezime) {
+	p = findPrevious(p, prezime);
+
+	if (p == NULL)	return -1;
+
+	position temp = NULL;
+	
+	temp = p->next;
+	p->next = temp->next;
+	free(temp);
 
 	return 0;
 }
 
+//Komentirano zbog include-anja ovog file-a u TreciZadatak
+/*
 int main() {
-	char* file = "studenti.txt";
-	int numStu = 0, maxBod = 120;
-
-	char* buffer = (char*)malloc(sizeof(char));
-	if (buffer == NULL)
+	position head = NULL;
+	
+	head = (position)malloc(sizeof(list));
+	if (head == NULL) {
+		puts("Greska pri alociranju cvora");
 		return -1;
+	}
+	head->next = NULL;
 
-	FileToBuffer(file, &buffer);
-	numStu = numStudents(buffer);
+	//a) dinamièki dodaje novi element na poèetak liste
+	add(head);
 
-	stu* nizStu = (stu*)malloc(sizeof(stu) * numStu);
-	if (nizStu == NULL)
-		return -1;
+	//c) dinamièki dodaje novi element na kraj liste
+	addAtEnd(head);
 
-	nizStu = DataToStruct(buffer, numStu);
-	free(buffer);
+	//b) ispisuje listu
+	printList(head->next);
+	
 
-	printStudents(nizStu, numStu, maxBod);
+	char prezime[30] = "Peric";
 
-	free(nizStu);
+	//d) pronalazi element u listi (po prezimenu)
+	findElement(head->next, prezime);
+
+	//e)briše odreðeni element iz liste
+	deleteElement(head, prezime);
+
+	printList(head->next);
+
+	free(head); //Brisanje cijele liste pa brisanje glave je napravljeno u 3. Zadatku
 
 	return 0;
-}
+}*/

@@ -101,7 +101,7 @@ int ListToFile(position p, char* file) {
 		fputs(p->ime, fp);	//Unesi ime/imena
 		fputc(' ', fp);	//razmakni ime od prezimena
 		fputs(p->prezime, fp);	//Unesi prezime/prezimena
-		fprintf("%d\n", p->godRodenja);	//Unesi godinu rodenja
+		fprintf(fp,"%d\n", p->godRodenja);	//Unesi godinu rodenja
 
 		p = p->next;
 	}
@@ -192,11 +192,14 @@ int fAddSorted(position p,position Head, char* prezime) {
 int bufferToStruct(position Head, char* buffer) {
 	int fName, lName, numBytes = 0, n=0;	//broj imena // broj prezimena // bitovi koje je sscanf obradia
 	char temp[45];	//privremena pohrana imena ili prezimena
-	position p = (position)malloc(sizeof(list));
-	
+
 	while (buffer+numBytes != "\0") {
 		sscanf(buffer + numBytes, "%d %d %n", &fName, &lName, &n);	//Koliko student ima imena i prezimena
 		numBytes += n;
+		
+		position p = (position)malloc(sizeof(list));
+		if (p == NULL) return -1;
+		p->next = NULL;
 
 		WriteNames(p, buffer, &numBytes, fName, "fName");	//Upisi ime u strukturu
 		WriteNames(p, buffer, &numBytes, lName, "lName");	//Upisi prezime u strukturu
@@ -205,9 +208,6 @@ int bufferToStruct(position Head, char* buffer) {
 		numBytes += n;
 		
 		if (fAddSorted ( p, Head, p->prezime) == -1)	return -1;
-
-
-		p = p->next;
 	}
 	return 0;
 }
@@ -219,6 +219,73 @@ int FileToList(char* file, position Head) {
 	if (FileToBuffer(file, &buffer) == -1)	return -1;
 	
 	if (bufferToStruct(Head, buffer) == -1)	return -1;
+
+	return 0;
+}
+
+int main() {
+
+	//--------DRUGI ZADATAK---------
+	position head = NULL;
+
+	head = (position)malloc(sizeof(list));
+	if (head == NULL) {
+		puts("Greska pri alociranju cvora");
+		return -1;
+	}
+	head->next = NULL;
+
+	//a) dinamièki dodaje novi element na poèetak liste
+	add(head);
+
+	//c) dinamièki dodaje novi element na kraj liste
+	addAtEnd(head);
+
+	//b) ispisuje listu
+	printList(head->next);
+	
+
+	char prezime[30] = "Peric";
+	
+	//d) pronalazi element u listi (po prezimenu)
+	findElement(head->next, prezime);
+
+	//e)briše odreðeni element iz liste
+	deleteElement(head, prezime);
+
+	printList(head->next);
+	
+	//------------------TRECI ZADATAK-------------------------
+
+	position NewHead = (position)malloc(sizeof(list));
+	if (NewHead == NULL) {
+		puts("Greska pri alociranju cvora");
+		return -1;
+
+	//a) dinamièki dodaje novi element iza odreðenog elementa
+	addAfter(NewHead, prezime);
+
+	//b)dinamièki dodaje novi element ispred odreðenog elementa
+	addBefore(NewHead, prezime);
+
+	}
+	NewHead->next = NULL;
+
+	
+	//e) èita listu iz datoteke
+	FileToList("studenti.txt", NewHead);
+
+	printList(NewHead->next);
+
+	//c) sortira listu po prezimenima osoba
+	Isort(NewHead);
+
+	printList(NewHead->next);
+	//Bsort(NewHead)
+
+	char* file = "Novi.txt";
+	//d) upisuje listu u datoteku
+	ListToFile(NewHead, file);
 
 	return 0;
 }

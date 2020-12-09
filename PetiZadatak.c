@@ -6,6 +6,7 @@ L1[] \nL2[] \n
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef struct _list list;
 typedef list* position;
@@ -220,7 +221,7 @@ int intersection(char* file, position intersection) {
 }
 
 //ispis liste
-printIt(position headNext) {
+void printIt(position headNext) {
 	while (headNext != NULL) {
 		printf("%d ", headNext->el);
 		headNext = headNext->next;

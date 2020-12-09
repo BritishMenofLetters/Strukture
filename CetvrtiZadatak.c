@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
 
 typedef struct poly list;
 typedef struct poly* position;
@@ -276,4 +277,57 @@ position multiPoly(char* file) {
 	//free(hMulti);						//JER VRACANJEM DINAMICKE OSTAJE MI NEOSLOBODEN POKAZIVAÈ
 
 	return hMulti;
+}
+
+//Brisanje liste
+int deleteAll(position ListHead) {
+
+	while (ListHead->next != NULL) {
+		position temp = (position)malloc(sizeof(list));	//Za brisanje odradenih cvorova iz lista
+		if (temp == NULL) { puts("Greska pri alociranju"); return -1; }
+
+		temp = ListHead->next;					//spremanje cvora za brisanje u temp
+		ListHead->next = ListHead->next->next;	//Novi pocetak liste spojiti na head liste
+
+		free(temp);					//izbrisi  cvor
+	}
+	return 0;
+}
+
+//Ispis liste
+void printIt(position headNext) {
+	while (headNext != NULL) {
+		printf("%d^%d ", headNext->koef, headNext->exp);
+		headNext = headNext->next;
+
+		if (headNext != NULL && headNext->koef > 0)
+			printf(" +");
+	}
+	puts("");
+}
+
+int main() {
+	char* file = "Polinomi.txt";
+
+	position Suma = NULL, Umnozak = NULL;
+
+	//Izracunaj sumu polinoma iz datoteke
+	Suma = sumPoly(file);
+	
+	puts("\nSuma:");
+	printIt(Suma->next);	//Ispisi sumu
+
+	//Izracunaj umnozak polinoma iz datoteke
+	Umnozak = multiPoly(file);
+
+	puts("\nUmnozak:");
+	printIt(Umnozak->next);	//Ispisi umnozak
+
+	deleteAll(Suma);		//brisanje liste
+	deleteAll(Umnozak);		//brisanje liste
+
+	free(Suma);
+	free(Umnozak);
+
+	return 0;
 }
