@@ -1,7 +1,8 @@
-/*Napisati program koji pomoæu vezanih listi simulira rad:
+/*Napisati program koji pomoï¿½u vezanih listi simulira rad:
 a) stoga,
 b) reda.
-Napomena: Funkcija "push" sprema cijeli broj, sluèajno generirani u opsegu od 10 -100.*/#include <stdio.h>
+Napomena: Funkcija "push" sprema cijeli broj, sluï¿½ajno generirani u opsegu od 10 -100.*/
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -14,17 +15,17 @@ struct Node {
 };
 
 //Stvara novi cvor s elementom random vrijednosti izmedu 10 i 100 i stavlja na pocetak liste (vrh stoga)
-int push(position head) {	
+int push(position head) {
 
 	position q = (position)malloc(sizeof(list));	//alociranje memorije za novi cvor
 	if (q == NULL) {
 		printf("Greska prilikom alociranja memorije\n");
 		return -1;
 	}
-	
+
 
 	q->el = ((double)rand() / RAND_MAX) * (100 - 10 + 1) + 10;	//Generiranje random broja izmedu 100 i 10 koji se sprema u cvor
-	q->next = NULL;												//Postavljanje pokazivaca na NULL			
+	q->next = NULL;												//Postavljanje pokazivaca na NULL
 
 	if (head->next != NULL) {			//Ukoliko stog nije prazan, postavi na pocetak stoga (pocetak liste)
 		q->next = head->next;			//Novi cvor pokazuje na pocetak liste
@@ -78,7 +79,7 @@ int pop(position ListHead) {
 
 //Ispisivanje liste
 printIt(position headNext) {
-	
+
 	fputs("Pocetak Liste: ",stdout);
 	while (headNext != NULL) {
 		printf("%d ", headNext->el);
@@ -104,7 +105,7 @@ void main() {
 	for (int i = 0; i < N; i++) {	//Ubacivanje N elemenata na stog
 		push(Head);		//Upisivanje elementa na vrh stoga
 		printIt(Head->next);	//Ispisivanje stoga
-	}	
+	}
 
 
 	puts("\nBrisanje");
@@ -136,5 +137,3 @@ void main() {
 	}
 	free(rHead);
 }
-
-
