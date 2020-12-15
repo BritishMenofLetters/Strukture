@@ -133,7 +133,11 @@ int bufferToStruct(position Head, const char* buffer){
 int main() {
   char file[20] = "Stog.txt";  //naziv datoteke u kojoj se spremljen postfiks izraz
   char* buffer = NULL; //buffer u koji ce se spremiti datoteka
-  position Head;  //Glava liste (stoga)
+  position Head = NULL;  //Glava liste (stoga)
+
+  Head = (position)malloc(sizeof(list));
+  if (Head == NULL) return -1;
+  Head->next = NULL;
 
   FileToBuffer(file, &buffer);  //prebaciva datoteku u buffer
 
