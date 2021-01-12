@@ -1,0 +1,126 @@
+/*Napisati program koji omogućava rad s binarnim stablom pretraživanja. Treba
+omogućiti unošenje novog elementa u stablo, ispis elemenata, brisanje i pronalaženje
+nekog elementa*/
+
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct _node node;
+typedef node* position;
+
+struct _node{
+	int el;
+	position left;
+	position right;
+};
+
+position makeNode(int el){
+	
+	position p = (position)malloc(sizeof(node));
+
+	if (!p)	return;
+
+	p->el = el;
+	p->left = NULL;
+	p->right = NULL;
+
+	return p;
+}
+
+position findNode(position root, int el) {
+	if (!root)	return root;
+
+	if (el == root->el)	return root;
+
+	else if (el < root->el)	return findNode(root->left, el);
+
+	else return findNode(root->right, el);
+}
+
+position insertNode(position* root, int el) {
+	
+	if (!(*root)) {
+		*root = makeNode(el);
+		return *root;
+	}
+
+	if (el < (*root)->el)
+		insertNode(&(*root)->left, el);
+
+	else if (el > (*root)->el)
+		insertNode(&(*root)->right, el);
+
+	else
+		return NULL;
+}
+
+void printTree(position root) {
+
+	if (!root)	return;
+
+	printTree(root->left);
+	printf("%d ", root->el);
+	printTree(root->right);
+}
+
+
+position findMax(position curr) {
+	while (curr->left)
+		curr = curr->left;
+
+	return curr;
+}
+
+
+position findMin(position curr) {
+	while (curr->right)
+		curr = curr->right;
+
+	return curr;
+}
+
+
+position deleteNode(position curr, int el) {
+	
+	if (!curr)	return NULL;
+
+	if (curr->el == el) {
+		if (curr->left) {
+			position temp = findMax(curr->left);
+			curr->el = temp->el;
+			curr->left = deleteNode(curr->left, temp->el);
+		}
+		else if (curr->right) {
+			position temp = findMin(curr->right);
+			curr->el = temp->el;
+			curr->right = deleteNode(curr->right, temp->el);
+		}
+		else {
+			free(curr);
+			return NULL;
+		}
+	}
+	else if (curr->el > el)
+		curr->left = deleteNode(curr->left, el);
+	else
+		curr->right = deleteNode(curr->right, el);
+}
+
+int deleteAll(position root) {
+	
+	if (!root)	return -1;
+
+	deleteAll(root->left);
+	deleteAll(root->right);
+
+	free(root);
+
+	return -1;
+}
+
+int main() {
+
+	return 0;
+}
